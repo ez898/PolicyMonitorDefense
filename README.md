@@ -1,6 +1,6 @@
 # LLM Tool-Use Defense: Single-Choke-Point Policy and Tamper-Evident Audit
 
-A complete demonstration of how a LangGraph tool-using agent can be coaxed to attempt data exfiltration, and how a **single choke point** (policy + audit) intercepts **every** tool call, BLOCKS disallowed actions, and still lets benign steps succeed.
+A demonstration of how a LangGraph tool-using agent can be coaxed to attempt data exfiltration, and how a **single choke point** (policy + audit) intercepts **every** tool call, BLOCKS disallowed actions, and still lets benign steps succeed.
 
 ## Goals (What We're Proving)
 
