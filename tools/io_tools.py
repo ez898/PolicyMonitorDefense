@@ -28,8 +28,11 @@ def read_file(path: str) -> str:
     file_path = DATA_ROOT / path
     resolved_path = file_path.resolve()
     
-    # Ensure we're still under DATA_ROOT
-    if not str(resolved_path).startswith(str(DATA_ROOT.resolve())):
+    # Ensure resolved path is under DATA_ROOT using robust check
+    resolved_root = DATA_ROOT.resolve()
+    try:
+        resolved_path.relative_to(resolved_root)
+    except ValueError:
         raise OSError(f"Path traversal not allowed: {path}")
     
     if not resolved_path.exists():

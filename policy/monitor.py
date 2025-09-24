@@ -61,8 +61,11 @@ def _check_read_file(args: Dict[str, Any], data_root: Path) -> PolicyDecision:
         requested_path = data_root / path_str
         resolved_path = requested_path.resolve()
         
-        # Ensure resolved path is under data_root
-        if not str(resolved_path).startswith(str(data_root.resolve())):
+        # Ensure resolved path is under data_root using robust check
+        resolved_root = data_root.resolve()
+        try:
+            resolved_path.relative_to(resolved_root)
+        except ValueError:
             return PolicyDecision(decision="BLOCK", reason=f"Path traversal blocked: {path_str}")
         
         return PolicyDecision(decision="ALLOW", reason=f"File access allowed: {path_str}")

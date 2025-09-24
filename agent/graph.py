@@ -85,17 +85,6 @@ class FakePlannerLLM:
         return AIMessage(content=f"Done. Summary: {getattr(self, '_last_result', 'No result')}")
 
 
-def substitute_last_result(args: Dict[str, Any], last_result: str) -> Dict[str, Any]:
-    """Substitute $LAST_RESULT placeholders in tool arguments."""
-    result = {}
-    for key, value in args.items():
-        if value == "$LAST_RESULT":
-            result[key] = last_result
-        else:
-            result[key] = value
-    return result
-
-
 # Global LLM instance to maintain state
 _llm_instance = None
 
@@ -143,6 +132,7 @@ def tools_node(state: AgentState, tools: List[Any]) -> AgentState:
     """Tools node that executes tool calls."""
     messages = state["messages"]
     last_message = messages[-1]
+    last_result_from_state = state.get("last_tool_result", "")
     
     # Handle both dict and message object formats
     if isinstance(last_message, dict):
@@ -160,7 +150,9 @@ def tools_node(state: AgentState, tools: List[Any]) -> AgentState:
     
     for tool_call in tool_calls:
         tool_name = tool_call["name"]
-        tool_args = tool_call["args"]
+        # Substitute $LAST_RESULT placeholders defensively
+        incoming_args = tool_call["args"]
+        tool_args = {k: (last_result_from_state if v == "$LAST_RESULT" else v) for k, v in incoming_args.items()}
         
         try:
             # Find and execute the tool

@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Callable, Dict, Any
 
 from audit.log import append
-from policy.monitor import check
 
 
 class PolicyBlocked(Exception):

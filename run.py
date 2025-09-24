@@ -54,10 +54,10 @@ def run_agent(mode: str, input_content: str, logs_dir: Path) -> Dict[str, Any]:
     try:
         final_state = graph.invoke(initial_state)
         
-        # Extract final agent output
+        # Extract final agent output (last AI message with content)
         final_messages = final_state["messages"]
         agent_output = ""
-        for msg in final_messages:
+        for msg in reversed(final_messages):
             if hasattr(msg, 'content') and msg.content and not hasattr(msg, 'tool_calls'):
                 agent_output = msg.content
                 break
