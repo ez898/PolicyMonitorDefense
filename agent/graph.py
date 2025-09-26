@@ -146,7 +146,7 @@ def tools_node(state: AgentState, tools: List[Any]) -> AgentState:
     
     # Execute tool calls
     tool_messages = []
-    last_result = ""
+    last_result = last_result_from_state or ""
     
     for tool_call in tool_calls:
         tool_name = tool_call["name"]
@@ -164,7 +164,11 @@ def tools_node(state: AgentState, tools: List[Any]) -> AgentState:
             
             if tool_func:
                 result = tool_func(**tool_args)
-                last_result = str(result)
+                # Only update last_result if tool returned a meaningful string
+                if result is not None:
+                    result_str = str(result)
+                    if result_str:
+                        last_result = result_str
                 
                 tool_messages.append(ToolMessage(
                     content=str(result),

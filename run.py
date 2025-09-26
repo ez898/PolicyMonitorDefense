@@ -11,6 +11,7 @@ from rich.text import Text
 from agent.graph import create_graph, AgentState
 from audit.log import validate_chain
 from tools.io_tools import DATA_ROOT
+from langchain_core.messages import AIMessage
 
 
 def read_input_file(input_path: Path) -> str:
@@ -54,13 +55,22 @@ def run_agent(mode: str, input_content: str, logs_dir: Path) -> Dict[str, Any]:
     try:
         final_state = graph.invoke(initial_state)
         
-        # Extract final agent output (last AI message with content)
+        # Extract final agent output: prefer last assistant AI message with content
         final_messages = final_state["messages"]
         agent_output = ""
         for msg in reversed(final_messages):
-            if hasattr(msg, 'content') and msg.content and not hasattr(msg, 'tool_calls'):
-                agent_output = msg.content
-                break
+            # Dict-based assistant message
+            if isinstance(msg, dict):
+                if msg.get("role") == "assistant" and msg.get("content"):
+                    agent_output = msg["content"]
+                    break
+            else:
+                # LangChain AIMessage without tool calls (or with empty tool_calls)
+                if isinstance(msg, AIMessage):
+                    tool_calls = getattr(msg, "tool_calls", None)
+                    if (not tool_calls) and getattr(msg, "content", None):
+                        agent_output = msg.content
+                        break
         
         # Validate audit chain if in defended mode
         chain_valid = None
